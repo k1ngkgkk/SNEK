@@ -24,4 +24,5 @@ https://youtu.be/czb68Nx76AI?si=8a2WenA2UStx902z
 * The blood spatter
 
 ## Credits
-@Alba_Mac on PixaBay for the backgroung music
+@Alba_Mac on PixaBay for the background music
+@FreeSoundCommunity on PixaBay for the death sound
