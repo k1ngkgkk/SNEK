@@ -108,7 +108,7 @@ async def main():
                 hed_y = mouse_y
 
             game["snake_history"].insert(0, (hed_x, hed_y))
-            if len(game["snake_history"]) > game["snake_length"] * 4:
+            if len(game["snake_history"]) > game["snake_length"] * 2:
                 game["snake_history"].pop()
 
             if random.random() < 0.03:  # 3% a frame ie 72 % a second.
@@ -218,15 +218,43 @@ async def main():
             color = yellow if rat["is_wildcard"] else blue if rat["is_rush"] else purple if rat["is_calm"] else gray
             pygame.draw.rect(screen, color, (rat["x"] - block / 2, rat["y"] - block / 2, block, block))
 
-        for i in range(0, len(game["snake_history"]), 4):
-            sx, sy = game["snake_history"][i]
-            if i == 0:
-                tcolor = hed_green
-                size = block + 4
-            else:
-                tcolor = green
-                size = block
-            pygame.draw.rect(screen, tcolor, (sx - size / 2, sy - size / 2, size, size))
+        for i, (sx, sy) in enumerate(game["snake_history"]):
+            t = i / max(1, len(game["snake_history"]) -1 )
+            
+            radius = max( 2, 2 + (block//2 - 2) * (1 - t) )
+
+            pygame.draw.circle(screen, green, (sx, sy), radius)
+
+        hx, hy = game["snake_history"][0]
+
+        lookback = min(10, len(game["snake_history"]) - 1)
+        nx, ny = game["snake_history"][lookback]
+
+        movX = hx - nx
+        movY = hy - ny
+
+        length = math.hypot(movX, movY)
+
+        if length > 0:
+            movX /= length
+            movY /= length
+        else:
+            movX = 1
+            movY = 0
+
+        px = -movY
+        py = movX
+
+        head_gap = block * 0.8
+
+        head_x = hx + movX * head_gap
+        head_y = hy + movY * head_gap
+
+        v1 = (head_x + movX * block, head_y + movY * block)
+        v2 = (head_x - movX * block * 0.5 + px * block * 0.6, head_y - movY * block * 0.5 + py * block * 0.6)
+        v3 = (head_x - movX * block * 0.5 - px *  block * 0.6, head_y - movY * block * 0.5 - py * block * 0.6)
+
+        pygame.draw.polygon(screen, hed_green,[(v1[0], v1[1]), (v2[0], v2[1]), (v3[0], v3[1])])
 
         font = pygame.font.SysFont(None, 36)
         score_text = font.render(f'Rats Eaten: {game["rats eaten"]} || Speed: {game["base_rat_fast"] + (game["rats eaten"] // 10)}', True, red)
@@ -253,6 +281,7 @@ async def main():
             if game["die_pos"]:
                 dx, dy = game["die_pos"]
                 pygame.draw.circle(screen, red, (dx, dy), 15)
+                pygame.draw.circle(screen, gray, (dx, dy), 10)
                 pygame.draw.circle(screen, red, (dx + 12, dy - 10), 10)
                 pygame.draw.circle(screen, red, (dx - 10, dy + 8), 12)
                 pygame.draw.circle(screen, red, (dx - 15, dy - 12), 6)
