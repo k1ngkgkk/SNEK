@@ -50,6 +50,9 @@ python snek.py
 * Dynamic snake body tapering
 * Custom music and sound effects
 
+  <img width="1001" height="792" alt="image" src="https://github.com/user-attachments/assets/199e4968-eb66-48d9-b57b-8a0a99ccf06b" />
+
+
 ## AI Usage
 
 AI was used to assist with:
