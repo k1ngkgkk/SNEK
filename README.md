@@ -15,3 +15,6 @@ A mouse-controlled bob omb like snake game built with Python and Pygame.
 
 2. Run the game:
    python snek.py
+
+## Demo
+https://youtu.be/czb68Nx76AI?si=8a2WenA2UStx902z
