@@ -60,6 +60,8 @@ def reset():
 game = reset()
 
 async def main():
+    global flip, game 
+    
     while True:
         screen.fill(black)
 
