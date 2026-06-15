@@ -54,7 +54,9 @@ def reset():
         "message_timer": 0,
         "message_color": purple,
         "calm_timer": 0,
-        "rush_timer": 0
+        "rush_timer": 0,
+        "shedding_cooldown": 0,
+        "skins": []
     }
 
 game = reset()
@@ -74,6 +76,23 @@ async def main():
             if event.type == pygame.KEYDOWN and game["die?"]:
                 game = reset()
 
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                if (not game["die?"] and game["snake_length"] >= 10 and game["shedding_cooldown"] <= 0):
+                    game["snake_length"] -= 5
+
+                    max_segments = game["snake_length"] * 2
+
+                    shed_body = game["snake_history"][max_segments:]
+                    game["snake_history"] = game["snake_history"][:max_segments]
+
+                    game["skins"].append(shed_body)
+
+                    game["shedding_cooldown"] = fps * 10
+
+                    game["message"] = "SHED SKIN!"
+                    game["message_timer"] = fps * 2
+                    game["message_color"] = white
+
         if not game["die?"]:
 
             if game["rush_timer"] > 0:
@@ -81,6 +100,9 @@ async def main():
 
             if game["calm_timer"] > 0:
                 game["calm_timer"] -= 1
+
+            if game["shedding_cooldown"] > 0:
+                game["shedding_cooldown"] -= 1
 
             is_rush_active = game["rush_timer"] > 0
             is_calm_active = game["calm_timer"] > 0
@@ -171,6 +193,8 @@ async def main():
 
                 rat_rect = pygame.Rect(rat["x"] - block / 2, rat["y"] - block / 2, block, block)
                 
+                powerup_duration = fps * (4 + game["rats eaten"] // 10) 
+
                 if hed_rect.colliderect(rat_rect):
                     if rat["is_wildcard"]:
                         flip = not flip
@@ -178,12 +202,12 @@ async def main():
                         game["message_timer"] = fps * 2
                         game["message_color"] = yellow
                     elif rat["is_rush"]:
-                        game["rush_timer"] = fps * 4
+                        game["rush_timer"] += powerup_duration
                         game["message"] = "SPEED BOOST!"
                         game["message_timer"] = fps * 2
                         game["message_color"] = blue
                     elif rat["is_calm"]:
-                        game["calm_timer"] = fps * 4
+                        game["calm_timer"] += powerup_duration
                         game["message"] = "take a break :)"
                         game["message_timer"] = fps * 2
                         game["message_color"] = purple
@@ -222,6 +246,19 @@ async def main():
             else:
                 pygame.draw.circle(screen, color, (rat["x"] - block / 2, rat["y"] - block / 2), block / 2)
 
+            for skin in game["skins"]:
+                for sx, sy in skin:
+                    skin_rect = pygame.Rect(sx - block/2, sy - block/2, block, block)
+                
+                    if skin_rect.colliderect(rat_rect):
+                        if not (rat["is_wildcard"] or rat["is_rush"] or rat["is_calm"]):
+                            hit_body = True
+                            game["die_pos"] = (rat["x"], rat["y"])
+                        break
+
+                if hit_body:
+                    break
+        
         for i, (sx, sy) in enumerate(game["snake_history"]):
             t = i / max(1, len(game["snake_history"]) -1 )
             
@@ -260,6 +297,10 @@ async def main():
 
         pygame.draw.polygon(screen, hed_green,[(v1[0], v1[1]), (v2[0], v2[1]), (v3[0], v3[1])])
 
+        for skin in game["skins"]:
+            for sx, sy in skin:
+                pygame.draw.circle(screen, (60, 60, 60), (sx, sy), 3)
+        
         font = pygame.font.SysFont(None, 36)
         score_text = font.render(f'Rats Eaten: {game["rats eaten"]} || Speed: {game["base_rat_fast"] + (game["rats eaten"] // 10)}', True, red)
         screen.blit(score_text, (10, 10))
@@ -279,7 +320,22 @@ async def main():
                 msg_surf = pygame.transform.flip(msg_surf, True, False) 
             screen.blit(msg_surf, (width // 2 - msg_surf.get_width() // 2, 100))
 
-        # Draw Game Over and Blood {AI USAGE}
+        max_powerup_time = fps * (4 + game["rats eaten"] // 10)
+
+        if game["rush_timer"] > 0:
+            percent = min(1, game["rush_timer"] / max_powerup_time)
+
+            pygame.draw.rect (screen, white, (10, 50, 200, 20), 2)
+            pygame.draw.rect (screen, blue,(10, 50, 200 * percent, 20))
+
+        if game["calm_timer"] > 0:
+            percent = min(1, game["calm_timer"] / max_powerup_time)
+
+            pygame.draw.rect(screen, white, (10,80,200,20), 2)
+
+            pygame.draw.rect(screen, purple, (10, 80, 200 * percent, 20))
+
+        # Draw Game Over and Blood Splatter {AI USAGE}
         if game["die?"]:
             # Draw Blood Spatter at death position
             if game["die_pos"]:
