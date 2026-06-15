@@ -28,8 +28,8 @@ pygame.display.set_caption("Snek (bom om like snek game)")
 clock = pygame.time.Clock()
 
 #sounds
-background = "background_music.ogg"
-death = mixer.Sound("hiss.ogg")
+background = "assets/background_music.ogg"
+death = mixer.Sound("assets/hiss.ogg")
 
 flip = False
 
@@ -61,7 +61,7 @@ game = reset()
 
 async def main():
     global flip, game 
-    
+
     while True:
         screen.fill(black)
 
