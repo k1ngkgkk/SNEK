@@ -189,7 +189,7 @@ while True:
                 bx, by = game["snake_history"][x]
                 body_rect = pygame.Rect(bx - block/2, by - block/2, block, block)
                 if body_rect.colliderect(rat_rect):
-                    if not rat["is_wildcard"]:
+                    if not rat["is_wildcard"] or not rat["is_rush"] or not rat["is_calm"]:
                         hit_body = True
                         game["die_pos"] = (rat["x"], rat["y"])
                     break
