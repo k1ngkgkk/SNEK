@@ -16,7 +16,7 @@ hed_green = (0, 150, 0) #snek boi hed
 gray = (128, 128, 128)  # ratz
 yellow = (255, 255, 0)  # wildcard
 blue = (0, 0, 255)  # speeeeeed
-purple = (128, 0, 128)  # sloooooow
+purple = (255, 0, 255)  # sloooooow
 red = (255, 0, 0)  # blood + game over
 white = (255, 255, 255)  # text
 
@@ -47,6 +47,7 @@ def reset():
         "die_pos": None,
         "message": "",
         "message_timer": 0,
+        "message_color": purple,
         "rush_timer": 0,
         "calm_timer": 0
     }
@@ -167,14 +168,17 @@ while True:
                     flip = not flip
                     game["message"] = "MOVEMENT FLIPPED!" if flip else "MOVEMENT RESTORED!"
                     game["message_timer"] = fps * 2
+                    game["message_color"] = yellow
                 elif rat["is_rush"]:
                     game["rush_timer"] = fps * 4
                     game["message"] = "SPEED BOOST!"
                     game["message_timer"] = fps * 2
+                    game["message_color"] = blue
                 elif rat["is_calm"]:
                     game["calm_timer"] = fps * 4
                     game["message"] = "take a break :)"
                     game["message_timer"] = fps * 2
+                    game["message_color"] = purple
                 else:
                     game["snake_length"] += 1
                     game["rats eaten"] += 1
@@ -221,11 +225,14 @@ while True:
     screen.blit(score_text, (10, 10))
 
     if game["message_timer"] > 0:
+        game["message_timer"] -= 1
+
         funky_font = pygame.font.SysFont("comicsansms", 48, bold=True)
-        msg_surf = funky_font.render(game["message"], True, yellow)
+        msg_surf = funky_font.render(game["message"], True, game["message_color"])
         
         # Mirror the text horizontally {AI USAGE}
-        msg_surf = pygame.transform.flip(msg_surf, True, False) 
+        if flip:
+            msg_surf = pygame.transform.flip(msg_surf, True, False) 
         screen.blit(msg_surf, (width // 2 - msg_surf.get_width() // 2, 100))
 
     # Draw Game Over and Blood {AI USAGE}
