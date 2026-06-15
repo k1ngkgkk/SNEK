@@ -22,3 +22,6 @@ https://youtu.be/czb68Nx76AI?si=8a2WenA2UStx902z
 ## AI Usage
 * Mirroring the text
 * The blood spatter
+
+## Credits
+@Alba_Mac on PixaBay for the backgroung music
