@@ -18,3 +18,11 @@ A mouse-controlled bob omb like snake game built with Python and Pygame.
 
 ## Demo
 https://youtu.be/czb68Nx76AI?si=8a2WenA2UStx902z
+
+## AI Usage
+* Mirroring the text
+* The blood spatter
+
+## Credits
+@Alba_Mac on PixaBay for the background music
+@FreeSoundCommunity on PixaBay for the death sound
