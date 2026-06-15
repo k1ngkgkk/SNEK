@@ -3,7 +3,6 @@ from pygame import mixer
 import math
 import random
 import sys
-import time
 
 width = 800
 height = 600
@@ -16,6 +15,8 @@ green = (0, 255, 0)  # snek boi
 hed_green = (0, 150, 0) #snek boi hed
 gray = (128, 128, 128)  # ratz
 yellow = (255, 255, 0)  # wildcard
+blue = (0, 0, 255)  # speeeeeed
+purple = (128, 0, 128)  # sloooooow
 red = (255, 0, 0)  # blood + game over
 white = (255, 255, 255)  # text
 
@@ -45,7 +46,9 @@ def reset():
         "die?": False,
         "die_pos": None,
         "message": "",
-        "message_timer": 0
+        "message_timer": 0,
+        "rush_timer": 0,
+        "calm_timer": 0
     }
 
 game = reset()
@@ -63,6 +66,16 @@ while True:
             game = reset()
 
     if not game["die?"]:
+
+        if game["rush_timer"] > 0:
+            game["rush_timer"] -= 1
+
+        if game["calm_timer"] > 0:
+            game["calm_timer"] -= 1
+
+        is_rush_active = game["rush_timer"] > 0
+        is_calm_active = game["calm_timer"] > 0
+
         mx, my = pygame.mouse.get_pos()
         if flip:
             mouse_x = width - mx
@@ -76,7 +89,8 @@ while True:
         dirToY = mouse_y - hed_y
         distance = math.hypot(dirToX, dirToY)
 
-        snake_fast = 5
+        snake_fast = 10 if is_rush_active else 5
+        
         if distance > snake_fast:
             hed_x += dirToX / distance * snake_fast
             hed_y += dirToY / distance * snake_fast
@@ -89,7 +103,19 @@ while True:
             game["snake_history"].pop()
 
         if random.random() < 0.03:  # 3% a frame ie 72 % a second.
-            is_wildcard = random.random() < 0.05
+            
+            # Make sure a rat is only ONE type of power-up {AI assistance needed(im dum lol)}
+            rat_type_roll = random.random()
+            is_wildcard = False
+            is_rush = False
+            is_calm = False
+
+            if rat_type_roll < 0.005:
+                is_wildcard = True
+            elif rat_type_roll < 0.02:
+                is_rush = True
+            elif rat_type_roll < 0.035:
+                is_calm = True
 
             side = random.randint(0, 3)
             rat_fast = game["base_rat_fast"] + (game["rats eaten"] // 10)
@@ -120,15 +146,19 @@ while True:
                 "y": y,
                 "vx": vx,
                 "vy": vy,
-                "is_wildcard": is_wildcard
+                "is_wildcard": is_wildcard,
+                "is_rush": is_rush,
+                "is_calm": is_calm
             })
 
         hed_rect = pygame.Rect(hed_x - block/2, hed_y - block/2, block, block)
         
         alive_rats = []
         for rat in game["rats"]:
-            rat["x"] += rat["vx"]
-            rat["y"] += rat["vy"]
+            speed_mult = 0.5 if is_calm_active else 1.0
+            
+            rat["x"] += rat["vx"] * speed_mult
+            rat["y"] += rat["vy"] * speed_mult
 
             rat_rect = pygame.Rect(rat["x"] - block / 2, rat["y"] - block / 2, block, block)
             
@@ -136,6 +166,14 @@ while True:
                 if rat["is_wildcard"]:
                     flip = not flip
                     game["message"] = "MOVEMENT FLIPPED!" if flip else "MOVEMENT RESTORED!"
+                    game["message_timer"] = fps * 2
+                elif rat["is_rush"]:
+                    game["rush_timer"] = fps * 4
+                    game["message"] = "SPEED BOOST!"
+                    game["message_timer"] = fps * 2
+                elif rat["is_calm"]:
+                    game["calm_timer"] = fps * 4
+                    game["message"] = "take a break :)"
                     game["message_timer"] = fps * 2
                 else:
                     game["snake_length"] += 1
@@ -149,21 +187,23 @@ while True:
                 if body_rect.colliderect(rat_rect):
                     if not rat["is_wildcard"]:
                         hit_body = True
-                        game["die_pos"] = (rat["x"], rat["y"])  # Record where the hit happened
+                        game["die_pos"] = (rat["x"], rat["y"])
                     break
 
             if hit_body:
                 game["die?"] = True
                 mixer.music.stop()
                 death.play(0)
+                break
 
             if -50 < rat["x"] < width + 50 and -50 < rat["y"] < height + 50:
                 alive_rats.append(rat)
 
-        game["rats"] = alive_rats
+        if not game["die?"]:
+            game["rats"] = alive_rats
 
     for rat in game["rats"]:
-        color = yellow if rat["is_wildcard"] else gray
+        color = yellow if rat["is_wildcard"] else blue if rat["is_rush"] else purple if rat["is_calm"] else gray
         pygame.draw.rect(screen, color, (rat["x"] - block / 2, rat["y"] - block / 2, block, block))
 
     for i in range(0, len(game["snake_history"]), 4):
@@ -181,8 +221,6 @@ while True:
     screen.blit(score_text, (10, 10))
 
     if game["message_timer"] > 0:
-        game["message_timer"] -= 1
-
         funky_font = pygame.font.SysFont("comicsansms", 48, bold=True)
         msg_surf = funky_font.render(game["message"], True, yellow)
         
