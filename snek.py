@@ -1,7 +1,9 @@
 import pygame
+from pygame import mixer
 import math
 import random
 import sys
+import time
 
 width = 800
 height = 600
@@ -18,13 +20,20 @@ red = (255, 0, 0)  # blood + game over
 white = (255, 255, 255)  # text
 
 pygame.init()
+mixer.init()
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Snek (bom om like snek game)")
 clock = pygame.time.Clock()
 
+#sounds
+background = "background_music.mp3"
+death = mixer.Sound("hiss.mp3")
+
 flip = False
 
 def reset():
+    mixer.music.load(background)
+    mixer.music.play(-1)
     global flip
     flip = False
     return {
@@ -46,6 +55,7 @@ while True:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            mixer.music.stop()
             pygame.quit()
             sys.exit()
         
@@ -144,6 +154,8 @@ while True:
 
             if hit_body:
                 game["die?"] = True
+                mixer.music.stop()
+                death.play(0)
 
             if -50 < rat["x"] < width + 50 and -50 < rat["y"] < height + 50:
                 alive_rats.append(rat)
