@@ -53,8 +53,8 @@ def reset():
         "message": "",
         "message_timer": 0,
         "message_color": purple,
-        "rush_timer": 0,
-        "calm_timer": 0
+        "calm_timer": 0,
+        "rush_timer": 0
     }
 
 game = reset()
@@ -216,7 +216,11 @@ async def main():
 
         for rat in game["rats"]:
             color = yellow if rat["is_wildcard"] else blue if rat["is_rush"] else purple if rat["is_calm"] else gray
-            pygame.draw.rect(screen, color, (rat["x"] - block / 2, rat["y"] - block / 2, block, block))
+            
+            if color is not gray:
+                pygame.draw.rect(screen, color, (rat["x"] - block / 2, rat["y"] - block / 2, block, block))
+            else:
+                pygame.draw.circle(screen, color, (rat["x"] - block / 2, rat["y"] - block / 2), block / 2)
 
         for i, (sx, sy) in enumerate(game["snake_history"]):
             t = i / max(1, len(game["snake_history"]) -1 )
