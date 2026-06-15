@@ -25,17 +25,9 @@ A mouse-controlled snake game built with Python and Pygame, featuring powerups, 
 
 ## Setup
 
-1. Install Pygame:
-
-```bash
-pip install pygame
-```
-
-2. Run the game:
-
-```bash
-python snek.py
-```
+* Go to website
+* Confirm via clicking
+* Enjoy!!!
 
 ## Features
 
